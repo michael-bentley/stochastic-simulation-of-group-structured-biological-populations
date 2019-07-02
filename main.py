@@ -2,14 +2,19 @@ import math
 import random
 import parameters
 
-from entity import Entity
+from entity import Entity, Individual, Group
 
 # Step 1 - set time to zero and initialise the population.
 time = 1
 nextPrint = 0
 
-while len(Entity.population) < parameters.initialN:
-    Entity(parameters.initialPhenotype)    
+# Initial population.
+while len(Group.population) < parameters.initialEntityN:
+    founder1 = Individual(parameters.initialPhenotype)
+    founder2 = Individual(parameters.initialPhenotype)
+    grp = Group([founder1, founder2])
+
+print(Individual.N, Group.N)
 
 if parameters.algorithm == "direct": # run the Direct Method algorithm.
     
@@ -18,7 +23,8 @@ if parameters.algorithm == "direct": # run the Direct Method algorithm.
         # Step 2 - calculate birth and death rates and sample the time to the next event using an exponential distribution.        
         sumRates = 0
         for entity in Entity.population:
-            sumRates += entity.n * (entity.calcBirthRate() + entity.calcDeathRate())        
+            entity.calcPhenotype()
+            sumRates += entity.n * (entity.calcBirthRate() + entity.calcDeathRate())
 
         time += -math.log(random.random()) / sumRates # exponentially distributed random number.
         
@@ -33,12 +39,15 @@ if parameters.algorithm == "direct": # run the Direct Method algorithm.
             sumRatesAgain += entity.n * entity.deathRate # not that we don't recalculate the death rate this time.
             if sumRatesAgain >= randomEvent:
                 entity.deathEvent() # execute entity death and update the population.
-                break 
-
+                break
+    
         # Print the outputs.
         if(time >= nextPrint):
             nextPrint += parameters.printInterval
-            print(round(time), Entity.N, Entity.Z / Entity.N)    
+            print(round(time), Entity.N, "N:", round(Individual.N), round(Group.N), "Z:", round(Individual.Z, 5), round(Group.Z, 5), round(Individual.Z / Individual.N, 5))
+            for group in Group.population:                           
+                print("Ni:", round(group.individualN, 2), "Zi:", round(group.individualZ, 5), round(group.z, 5), end = "\t\t")
+            print(end = "\n\n")
 
 else: # run the Allen & Dytham (2009) algorithm.
 
@@ -79,8 +88,9 @@ else: # run the Allen & Dytham (2009) algorithm.
             randomEntity = random.random() * Entity.N
             randomEntitySum = 0
             for entity in Entity.population:
-                randomEntitySum += entity.n 
-                if randomEntitySum > randomEntity:            
+                randomEntitySum += entity.n
+                if randomEntitySum > randomEntity:
+                    entity.calcPhenotype()
                     if randomEvent == "birth":
                         if random.random() < entity.calcBirthRate() / cb:
                             entity.birthEvent() # execute entity birth and update the population.
@@ -95,4 +105,7 @@ else: # run the Allen & Dytham (2009) algorithm.
             # Print the outputs.
             if(time >= nextPrint):
                 nextPrint += parameters.printInterval
-                print(round(time), Entity.N, Entity.Z / Entity.N)   
+                print(round(time), Entity.N, round(Individual.N), round(Group.N), round(Individual.Z / Individual.N, 5), round(Group.Z / Group.N, 5))
+                for group in Group.population:                           
+                    print(round(group.individualN, 2), round(group.z, 5), round(Individual.Z, 5), round(group.individualZ, 5), round(Individual.N, 5), round(group.individualN, 5), round(group.individualZ / group.individualN, 5), end = "\t\t")
+                print(end = "\n\n") 
