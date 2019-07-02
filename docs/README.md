@@ -1,6 +1,6 @@
 # stochastic-simulation-of-biological-populations
 
-A model from from [Allen & Dytham (2009)](#references) written in Python. The model is used to demonstrate the use of an individual-based, stochastic simulation of biological populations in continuous time.
+The model from from [Allen & Dytham (2009)](#references) is extended to group-structured populations. Written in Python. The model is used to demonstrate the use of an individual-based, stochastic simulation of biological populations in continuous time, with the addition of group structure.
 
 ## Introduction
 
