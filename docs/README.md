@@ -2,6 +2,10 @@
 
 The model from from [Allen & Dytham (2009)](#references) is extended to group-structured populations. Written in Python. The model is used to demonstrate the use of an individual-based, stochastic simulation of biological populations in continuous time, with the addition of group structure.
 
+## Important note.
+
+Stochastic algorithm by [Allen & Dytham (2009)](#references) not working as expected in latest iteration of the code.
+
 ## Introduction
 
 Two algorithms are coded up from the paper: 1) a novel algorithm from [Allen & Dytham (2009)](#references), here called the A&D Method; and 2) the Gillespie Alorithm developed in [Gillespie (1976, 1979)](#references), and otherwise known as the Direct Method. Whilst the A&D Method performs much faster than the Direct Method and converges on the same solution, it appears to generate much noisier outputs around that solution (general observation, not formally tested).

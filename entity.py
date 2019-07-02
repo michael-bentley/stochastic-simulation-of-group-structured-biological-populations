@@ -14,19 +14,20 @@ class Individual:
 
     def __init__(self, phenotype):        
 
-        # Update self
+        # Update individual
         self.n = 1 # set individual abundance to 1.
         self.z = phenotype # set individual phenotype to input.
         self.group = None # this is set in the group constructor.
         self.birthRate = 0
         self.deathRate = 0
-
-        # Update global individual
         Individual.population.append(self) # append Individual to global population.        
         Individual.N += self.n # increment population size by Individual abundance.        
         Individual.Z += self.z # increment population phenotype by Individual phenotype.
 
-        # Update global entity
+        # Update group
+        # all takes place within group constructor when individual is added to a group.
+
+        # Update entity
         Entity.population.append(self) # append Individual to global population.
         Entity.N += self.n # increment population size by Individual abundance.        
 
@@ -50,8 +51,8 @@ class Individual:
             self.deathRate = parameters.mu0 + (1 - parameters.mu0) * (1 - math.exp(-lmbda))        
         return self.deathRate
 
-    def birthEvent(self):        
-        if random.random() < 0.01:            
+    def birthEvent(self):                
+        if random.random() < 0.1:            
             phenotype = self.z
             if random.random() < 0.5:
                 phenotype += 0.01
@@ -62,68 +63,59 @@ class Individual:
                 if phenotype < 0:
                     phenotype = 0
 
-            # Update self and global (takes place within individual constructor)
+            # Update individual and entity (takes place within individual constructor)
             descendant = Individual(phenotype)    
 
             # Update group
+            Group.Z -= self.group.z
             descendant.group = self.group
             descendant.group.individuals.append(descendant)
             descendant.group.individualN += 1        
             descendant.group.individualZ += descendant.z
-            descendant.group.calcPhenotype()
+            descendant.group.z = descendant.group.individualZ / descendant.group.individualN
+            Group.Z += self.group.z
             
         else:
-            # Update self
+            # Update individual
             self.n += 1
-
-            # Update group
-            self.group.individualN += 1        
-            self.group.individualZ += self.z
-            self.group.calcPhenotype()
-
-            # Update global individual
             Individual.N += 1            
             Individual.Z += self.z  
 
-            # Update global entity
-            Entity.N += 1
+            # Update group
+            Group.Z -= self.group.z
+            self.group.individualN += 1        
+            self.group.individualZ += self.z 
+            self.group.z = self.group.individualZ / self.group.individualN
+            Group.Z += self.group.z
+
+            # Update entity
+            Entity.N += 1        
 
     def deathEvent(self):
 
-        # Update self
+        # Update individual
         self.n -= 1
-
-        # Update group
-        self.group.individualN -= 1        
-        self.group.individualZ -= self.z        
-
-        # Update global individual
         Individual.N -= 1        
         Individual.Z -= self.z
-
-        # Update global entity
-        Entity.N -= 1
-        
-        if self.n == 0:
-
-            # Update self
-            self.n = 0
-            self.z = 0
-            self.birthRate = 0
-            self.deathRate = 0
-
-            # Update group
-            self.group.individuals.remove(self)            
-
-            if self.group.individualN == 0:
-                self.group.deathEvent()
-
-            self.group = None
-
-            # Update global individual
+        if self.n == 0:        
             Individual.population.remove(self) # remove the object from the population list.          
 
-            # Update global entity            
+        # Update group
+        Group.Z -= self.group.z
+        self.group.individualN -= 1
+        self.group.individualZ -= self.z            
+        if self.group.individualN > 0:            
+            self.group.z = self.group.individualZ / self.group.individualN        
+        Group.Z += self.group.z       
+        
+        if self.n == 0:
+            self.group.individuals.remove(self)  
+            if len(self.group.individuals) == 0:
+                self.group.deathEvent()
+
+        # Update entity
+        Entity.N -= 1
+        if self.n == 0:   
             Entity.population.remove(self) # remove the object from the population list.        
 
 class Group:
@@ -133,39 +125,40 @@ class Group:
     Z = 0 # total phenotype.
 
     def __init__(self, founders):
+
+        # Update individual 
+        for individual in founders: 
+            individual.group = self          
+
+        # Update group
         self.founders = founders # store the founder individuals.
-        self.individuals = founders # the collective holds all the individuals within the group.
+        self.individuals = founders.copy() # the individuals list holds all the individuals within the group.
         self.n = 1 # set group abundance to 1.                
         self.birthRate = 0
         self.deathRate = 0
         self.individualN = 0
         self.individualZ = 0
-
-        self.individualN = 0
-        self.individualZ = 0
         for individual in self.individuals: 
-            individual.group = self          
             self.individualN += individual.n
             self.individualZ += individual.n * individual.z
-        
         self.z = self.individualZ / self.individualN # set group phenotype to average phenotype of founders.                      
-
         Group.population.append(self) # append Group to global population.        
         Group.N += self.n # increment population size by Group abundance.        
         Group.Z += self.z # increment population phenotype by Group phenotype.
-
+        
+        # Update entity
         Entity.population.append(self) # append group to entity population.
-        Entity.N += self.n # increment entity population size by group abundance.        
-    
+        Entity.N += self.n # increment entity population size by group abundance.           
+
     def calcPhenotype(self):
         Group.Z -= self.z
         self.individualN = 0
         self.individualZ = 0
-        for individual in self.individuals: 
+        for individual in self.individuals:             
             self.individualN += individual.n
-            self.individualZ += individual.n * individual.z        
+            self.individualZ += individual.n * individual.z
         self.z = self.individualZ / self.individualN # set group phenotype to average phenotype of founders.  
-        Group.Z += self.z        
+        Group.Z += self.z
         return self.z
 
     def calcBirthRate(self):          
@@ -179,34 +172,23 @@ class Group:
 
     def deathEvent(self):
 
-        # Update self
-        self.n -= 1
-                
-        # Update individuals in group
+        # Update individual
         if len(self.individuals) > 0:
             for individual in self.individuals:
-                
-                # Update individual
-                individual.n = 0
-                individual.z = 0
-                individual.birthRate = 0
-                individual.deathRate = 0
-                individual.group.remove(individual)
-
-                # Update global individual
                 Individual.N -= individual.n       
                 Individual.Z -= individual.n * individual.z
-                Individual.population.remove(individual) # remove the object from the population list.    
+                Individual.population.remove(individual) # remove the object from the population list.                    
 
-                # Update global entity
-                Entity.N -= 1
-                Entity.population.remove(individual) # remove the object from the population list.  
-
-        # Update global group
+        # Update group
+        self.n -= 1
         Group.N -= 1        
         Group.Z -= self.z
         Group.population.remove(self)
-
-        # Update global entity
+                
+        # Update entity
+        if len(self.individuals) > 0:
+            for individual in self.individuals:
+                Entity.N -= 1
+                Entity.population.remove(individual) # remove the object from the population list.  
         Entity.N -= 1
         Entity.population.remove(self)
