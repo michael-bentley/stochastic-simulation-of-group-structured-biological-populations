@@ -57,11 +57,11 @@ if parameters.algorithm == "direct": # run the Direct Method algorithm.
             print("Z bar grp:", round(Group.Z  / Group.N, 4))
             print()
 
-            for group in Group.population:                           
-                print("Ni:", round(group.individualN, 2))
-                print("Zi tot:", round(group.individualZ, 2))
-                print("Zi bar:", round(group.z, 2))
-                print()    
+            # for group in Group.population:                           
+            #     print("Ni:", round(group.individualN, 2))
+            #     print("Zi tot:", round(group.individualZ, 2))
+            #     print("Zi bar:", round(group.z, 2))
+            #     print()    
             print(end = "\n\n")
 
 else: # run the Allen & Dytham (2009) algorithm.
@@ -132,9 +132,9 @@ else: # run the Allen & Dytham (2009) algorithm.
                 print("Z bar grp:", round(Group.Z  / Group.N, 4))
                 print()
 
-                for group in Group.population:                           
-                    print("Ni:", round(group.individualN, 2))
-                    print("Zi tot:", round(group.individualZ, 2))
-                    print("Zi bar:", round(group.z, 2))
-                    print()    
-                print(end = "\n\n")
+                # for group in Group.population:                           
+                #     print("Ni:", round(group.individualN, 2))
+                #     print("Zi tot:", round(group.individualZ, 2))
+                #     print("Zi bar:", round(group.z, 2))
+                #     print()    
+                # print(end = "\n\n")

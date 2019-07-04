@@ -35,20 +35,11 @@ class Individual:
         return self.z
     
     def calcBirthRate(self):          
-        R = parameters.Rtot / Individual.N
-        if R > 1:
-            R = 1      
-        self.birthRate = R * (1 - self.z)
+        self.birthRate = 1
         return self.birthRate
     
     def calcDeathRate(self):                
-        R = parameters.Rtot / Individual.N
-        if R > 1:
-            R = 1
-        self.deathRate = 1
-        if R > 0:
-            lmbda = parameters.K / (R * self.z) - parameters.K
-            self.deathRate = parameters.mu0 + (1 - parameters.mu0) * (1 - math.exp(-lmbda))        
+        self.deathRate = self.group.individualN / parameters.individualCarryingCapacity
         return self.deathRate
 
     def birthEvent(self):                
@@ -161,14 +152,22 @@ class Group:
         Group.Z += self.z
         return self.z
 
-    def calcBirthRate(self):          
+    def calcBirthRate(self):
+        self.birthRate = 0     
         return self.birthRate
     
     def calcDeathRate(self):                      
+        self.deathRate = 0
         return self.deathRate
 
     def birthEvent(self):        
-        pass   
+        randomIndividual = random.random() * self.individualN
+        randomIndividualSum = 0
+        for individual in self.individuals:
+            randomIndividualSum += individual.n
+            if randomIndividualSum > randomIndividual:
+                founder = Individual(individual.z)
+                grp = Group([founder])   
 
     def deathEvent(self):
 
